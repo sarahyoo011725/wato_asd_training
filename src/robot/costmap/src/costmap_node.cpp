@@ -21,8 +21,8 @@ void CostmapNode::sensor_callback(const sensor_msgs::msg::LaserScan::SharedPtr m
   nav_msg.info.width = cols;
   nav_msg.info.height = rows;
   nav_msg.info.resolution = resolution;
-  nav_msg.info.origin.position.x = -width_m / 2.0;
-  nav_msg.info.origin.position.y = -height_m / 2.0;
+  nav_msg.info.origin.position.x = width_m / 2.0;
+  nav_msg.info.origin.position.y = height_m / 2.0;
   nav_msg.info.origin.position.z = 0;
   nav_msg.info.origin.orientation.w = 1.0;
   nav_msg.data.resize(rows * cols);
