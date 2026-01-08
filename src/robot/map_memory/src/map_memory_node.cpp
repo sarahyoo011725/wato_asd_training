@@ -78,8 +78,9 @@ void MapMemoryNode::publish() {
 
     if (gx < 0 || gy < 0 || gx >= cols || gy >= rows) continue;
 
-    int8_t cost = last_costmap_.data[i];
+    int cost = (int)(last_costmap_.data[i]); 
     if (cost <= 100 && cost >= 0) {
+      RCLCPP_INFO(get_logger(), "(%d, %d) cost: %d", gx, gy, cost);
       global_map_.data[gy * cols + gx] = cost; 
     }
   }

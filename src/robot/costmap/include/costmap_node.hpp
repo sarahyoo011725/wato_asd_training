@@ -26,14 +26,14 @@ class CostmapNode : public rclcpp::Node {
     rclcpp::TimerBase::SharedPtr timer_;
 
     // costmap settings
-    const float width_m = 20;
-    const float height_m = 20;
+    const int rows = 10;
+    const int cols = 10; 
     const float resolution = 0.1;
+    const float width_m = cols * resolution;
+    const float height_m = rows * resolution;
     const float inflation_radius_m = 1.0;
     const float mark_obstacle = 100;
     const float max_cost = 254;
-    const int rows = std::ceil(height_m / resolution);
-    const int cols = std::ceil(width_m / resolution);
 
     std::vector<float> create_costmap(float angle_min, float angle_increment,
       float range_min, float range_max, const std::vector<float> &ranges);
