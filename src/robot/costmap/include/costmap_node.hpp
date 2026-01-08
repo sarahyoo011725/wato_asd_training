@@ -25,8 +25,9 @@ class CostmapNode : public rclcpp::Node {
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sensor_msg_sub_;
     rclcpp::TimerBase::SharedPtr timer_;
 
-    const float width_m = 100;
-    const float height_m = 100;
+    // costmap settings
+    const float width_m = 20;
+    const float height_m = 20;
     const float resolution = 0.1;
     const float inflation_radius_m = 1.0;
     const float mark_obstacle = 100;

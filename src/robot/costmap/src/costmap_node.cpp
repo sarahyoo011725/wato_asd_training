@@ -5,10 +5,10 @@
 #include "costmap_node.hpp"
 
 CostmapNode::CostmapNode() : Node("costmap"), costmap_(robot::CostmapCore(this->get_logger())) {
-  string_pub_ = create_publisher<std_msgs::msg::String>("/test_topic", rclcpp::SystemDefaultsQoS());
-  costmap_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>("/costmap", rclcpp::SystemDefaultsQoS());
+  string_pub_ = create_publisher<std_msgs::msg::String>("/test_topic", 10);
+  costmap_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>("/costmap", 10);
   sensor_msg_sub_ = create_subscription<sensor_msgs::msg::LaserScan>(
-    "/lidar", rclcpp::SystemDefaultsQoS(), std::bind(&CostmapNode::sensor_callback, this, std::placeholders::_1));
+    "/lidar", 10, std::bind(&CostmapNode::sensor_callback, this, std::placeholders::_1));
 }
 
 void CostmapNode::sensor_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
@@ -16,18 +16,19 @@ void CostmapNode::sensor_callback(const sensor_msgs::msg::LaserScan::SharedPtr m
   auto costmap = create_costmap(m->angle_min, m->angle_increment, m->range_min, m->range_max, m->ranges);
 
   nav_msgs::msg::OccupancyGrid nav_msg;
-  nav_msg.header.frame_id = "map";
+  nav_msg.header.frame_id = "odom";
   nav_msg.header.stamp = now();
   nav_msg.info.width = cols;
   nav_msg.info.height = rows;
   nav_msg.info.resolution = resolution;
-  nav_msg.info.origin.position.x = width_m / 2.0;
-  nav_msg.info.origin.position.y = height_m / 2.0;
+  nav_msg.info.origin.position.x = -width_m / 2.0;
+  nav_msg.info.origin.position.y = -height_m / 2.0;
   nav_msg.info.origin.position.z = 0;
   nav_msg.info.origin.orientation.w = 1.0;
   nav_msg.data.resize(rows * cols);
 
-  for (int i = 0; i < costmap.size(); i++) {
+  size_t n = costmap.size();
+  for (size_t i = 0; i < n; i++) {
     if (costmap[i] == 0) {
       nav_msg.data[i] = 0;
     } else {
@@ -42,14 +43,14 @@ std::vector<float> CostmapNode::create_costmap(float angle_min, float angle_incr
   float range_min, float range_max, const std::vector<float> &ranges) {
   std::vector<float> costmap(rows * cols, 0.0f);
   std::queue<Point> obstacles;
-  int n = ranges.size();
+  size_t n = ranges.size();
 
   // origin indices in grid
   Point origin;
   origin.x = std::floor(cols / 2);
   origin.y = std::floor(rows / 2);
 
-  for (int i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     double angle = angle_min + angle_increment * i;
     double range = ranges[i];
 
@@ -60,7 +61,7 @@ std::vector<float> CostmapNode::create_costmap(float angle_min, float angle_incr
 
       if (x < cols && y < rows && x >= 0 && y >= 0) {
         // mark obstacle
-        costmap[y * cols + x] = max_cost;  
+        costmap[y * cols + x] = mark_obstacle;  
         // stores obstacle points
         obstacles.push({x, y});
       }
