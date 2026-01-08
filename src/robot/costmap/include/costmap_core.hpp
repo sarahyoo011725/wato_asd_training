@@ -25,7 +25,7 @@ class CostmapCore {
   const float inflation_radius_m = 1.0;
   const int rows = (int) (height_m / resolution);
   const int cols = (int) (width_m / resolution);
-  const int step_size = (int) (inflation_radius_m / resolution);
+  const int step_size = (int) (std::ceil(inflation_radius_m / resolution));
   const float mark_obstacle = 100;
   const float max_cost = 254;
   const int origin_x = cols / 2;

@@ -11,8 +11,8 @@ namespace {
 }
 
 CostmapNode::CostmapNode() : Node("costmap"), costmap_(robot::CostmapCore(this->get_logger())) {
-  string_pub_ = create_publisher<std_msgs::msg::String>(default_test_topic, 10);
-  costmap_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>(default_costmap_topic, 10);
+  string_pub_ = create_publisher<std_msgs::msg::String>(default_test_topic, rclcpp::SystemDefaultsQoS());
+  costmap_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>(default_costmap_topic, rclcpp::SystemDefaultsQoS());
 
   //timer_ = create_wall_timer(std::chrono::milliseconds(500), std::bind(&CostmapNode::publish_msg, this));
 
