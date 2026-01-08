@@ -11,9 +11,12 @@
 #include "costmap_core.hpp"
 
 class CostmapNode : public rclcpp::Node {
+  struct Point {
+    int x, y;
+  };
+
   public:
     CostmapNode();
-    void publish_msg();
 
   private:
     robot::CostmapCore costmap_;
@@ -21,6 +24,19 @@ class CostmapNode : public rclcpp::Node {
     rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr costmap_pub_;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr sensor_msg_sub_;
     rclcpp::TimerBase::SharedPtr timer_;
+
+    const float width_m = 100;
+    const float height_m = 100;
+    const float resolution = 0.1;
+    const float inflation_radius_m = 1.0;
+    const float mark_obstacle = 100;
+    const float max_cost = 254;
+    const int rows = std::ceil(height_m / resolution);
+    const int cols = std::ceil(width_m / resolution);
+
+    std::vector<float> create_costmap(float angle_min, float angle_increment,
+      float range_min, float range_max, const std::vector<float> &ranges);
+    void sensor_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg);
 };
 
 #endif 
