@@ -28,13 +28,13 @@ class MapMemoryNode : public rclcpp::Node {
     bool costmap_updated = false;
 
     // global map settings
-    const int cols = 30;
-    const int rows = 30; 
+    const int cols = 300;
+    const int rows = 300; 
     const float resolution = 0.1;
     const float width_m = cols * resolution;
     const float height_m = rows * resolution;
-    const float map_origin_x = -width_m / 2.0;
-    const float map_origin_y = -height_m / 2.0;
+    const double map_origin_x = -width_m / 2.0;
+    const double map_origin_y = -height_m / 2.0;
 
     void costmap_callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg);
     void odometry_callback(const nav_msgs::msg::Odometry::SharedPtr msg);

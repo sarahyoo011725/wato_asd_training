@@ -16,12 +16,12 @@ MapMemoryNode::MapMemoryNode() : Node("map_memory"), map_memory_(robot::MapMemor
   timer_ = create_wall_timer(std::chrono::seconds(1), std::bind(&MapMemoryNode::publish, this));
 
   // global map settings
-  global_map_.header.frame_id = "map";
+  global_map_.header.frame_id = "sim_world";
   global_map_.info.origin.position.x = map_origin_x;
   global_map_.info.origin.position.y = map_origin_y;
   global_map_.info.origin.position.z = 0;
-  global_map_.info.width = cols; // number of horizontal cells
-  global_map_.info.height = rows; // number of vertical cells
+  global_map_.info.width = cols; 
+  global_map_.info.height = rows; 
   global_map_.info.resolution = resolution;
   global_map_.data.resize(rows * cols, 0);
 }
@@ -57,7 +57,7 @@ void MapMemoryNode::publish() {
   // yaw
   double heading = std::atan2(2 * (qw * qz + qx * qy), 1 - 2 * (qy * qy + qz * qz));
 
-  size_t n = last_costmap_.data.size();
+  const int n = (int) last_costmap_.data.size();
   const int costmap_cols = last_costmap_.info.width;
   const int costmap_rows = last_costmap_.info.height; 
   const float costmap_resolution = last_costmap_.info.resolution;
@@ -73,14 +73,16 @@ void MapMemoryNode::publish() {
     double global_x = pose_x + local_x * std::cos(heading) - local_y * std::sin(heading);
     double global_y = pose_y + local_x * std::sin(heading) + local_y * std::cos(heading);
     // convert the global cell pose into global map index
-    int gx = std::lround((global_x - map_origin_x) / resolution);
-    int gy = std::lround((global_y - map_origin_y) / resolution);
+    int gx = std::floor((global_x - global_map_.info.origin.position.x) / global_map_.info.resolution);
+    int gy = std::floor((global_y - global_map_.info.origin.position.y) / global_map_.info.resolution);
 
-    if (gx < 0 || gy < 0 || gx >= cols || gy >= rows) continue;
+    // out of bound
+    if (gx < 0 || gx >= cols || gy < 0 || gy >= rows) {
+      continue;
+    }
 
-    int cost = (int)(last_costmap_.data[i]); 
+    int8_t cost = last_costmap_.data[i]; 
     if (cost <= 100 && cost >= 0) {
-      RCLCPP_INFO(get_logger(), "(%d, %d) cost: %d", gx, gy, cost);
       global_map_.data[gy * cols + gx] = cost; 
     }
   }

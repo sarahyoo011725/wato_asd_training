@@ -16,7 +16,7 @@ void CostmapNode::sensor_callback(const sensor_msgs::msg::LaserScan::SharedPtr m
   auto costmap = create_costmap(m->angle_min, m->angle_increment, m->range_min, m->range_max, m->ranges);
 
   nav_msgs::msg::OccupancyGrid nav_msg;
-  nav_msg.header.frame_id = "odom";
+  nav_msg.header.frame_id = "sim_world";
   nav_msg.header.stamp = now();
   nav_msg.info.width = cols;
   nav_msg.info.height = rows;
@@ -29,11 +29,7 @@ void CostmapNode::sensor_callback(const sensor_msgs::msg::LaserScan::SharedPtr m
 
   size_t n = costmap.size();
   for (size_t i = 0; i < n; i++) {
-    if (costmap[i] == 0) {
-      nav_msg.data[i] = 0;
-    } else {
-      nav_msg.data[i] = (int) (std::min(100.0f, costmap[i] * 100.0f / max_cost));
-    }
+    nav_msg.data[i] = costmap[i]; 
   }
 
   costmap_pub_->publish(nav_msg);
@@ -56,15 +52,18 @@ std::vector<float> CostmapNode::create_costmap(float angle_min, float angle_incr
 
     if (range <= range_max && range >= range_min) {
       // transform cartesian coordinates into grid indices
-      int x = origin.x + std::lround(range * std::cos(angle) / resolution);
-      int y = origin.y + std::lround(range * std::sin(angle) / resolution); 
+      int x = origin.x + std::floor(range * std::cos(angle) / resolution);
+      int y = origin.y + std::floor(range * std::sin(angle) / resolution); 
 
-      if (x < cols && y < rows && x >= 0 && y >= 0) {
-        // mark obstacle
-        costmap[y * cols + x] = mark_obstacle;  
-        // stores obstacle points
-        obstacles.push({x, y});
+      if (x < 0 || x >= cols || y < 0 || y >= rows) {
+        //RCLCPP_INFO(get_logger(), "costmap index out of bound: (x=%d, y=%d)", x, y);
+        continue;
       }
+
+      // mark obstacle
+      costmap[y * cols + x] = max_cost;  
+      // stores obstacle points
+      obstacles.push({x, y});
     }
   }
 
@@ -80,7 +79,7 @@ std::vector<float> CostmapNode::create_costmap(float angle_min, float angle_incr
         int adj_x = obstacle.x + dx;
         int adj_y = obstacle.y + dy;
 
-        if (adj_y >= rows || adj_x >= cols || adj_y < 0 || adj_x < 0) {
+        if (adj_x < 0 || adj_x >= cols || adj_y < 0 || adj_y >= rows) {
           continue;
         }
 
