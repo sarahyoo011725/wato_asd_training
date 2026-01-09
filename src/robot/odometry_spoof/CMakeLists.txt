@@ -24,13 +24,13 @@ add_executable(odometry_spoof src/odometry_spoof.cpp)
 target_include_directories(odometry_spoof
   PUBLIC include)
 # Add ROS2 dependencies required by package
-ament_target_dependencies(odometry_spoof
-  rclcpp
-  geometry_msgs
-  tf2
-  tf2_ros
-  tf2_geometry_msgs
-  nav_msgs
+target_link_libraries(odometry_spoof
+  rclcpp::rclcpp
+  ${geometry_msgs_TARGETS}
+  tf2::tf2
+  tf2_ros::tf2_ros
+  ${tf2_geometry_msgs_TARGETS}
+  ${nav_msgs_TARGETS}
 )
 
 # Copy executable to installation location

@@ -27,8 +27,8 @@ target_include_directories(map_memory_lib
   PUBLIC include)
 # Add ROS2 dependencies required by package
 target_link_libraries(map_memory_lib PUBLIC
-  ${nav_msgs_TARGETS}
   rclcpp::rclcpp
+  ${nav_msgs_TARGETS}
 )
 
 # Create ROS2 node executable from source files
