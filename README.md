@@ -1,12 +1,28 @@
-# WATonomous ASD Admissions Assignment
+## Project Demo
+This video demonstrates the current prototype of our autonomous robot, showcasing LiDAR-based SLAM mapping and path planning in action.  
+
+[![Watch the Demo](https://img.youtube.com/vi/wIKEoOrXFpg/0.jpg)](https://www.youtube.com/watch?v=wIKEoOrXFpg)  
+*Click the image to watch the full demo on YouTube.*
 
 ## Prerequisite Installation
-These steps are to setup the monorepo to work on your own PC. We utilize docker to enable ease of reproducibility and deployability.
 
-> Why docker? It's so that you don't need to download any coding libraries on your bare metal pc, saving headache :3
+These steps will set up the monorepo on your local machine. We use **Docker** to ensure reproducibility and simplify deployment.  
 
-1. This assignment is supported on Linux Ubuntu >= 22.04, Windows (WSL), and MacOS. This is standard practice that roboticists can't get around. To setup, you can either setup an [Ubuntu Virtual Machine](https://ubuntu.com/tutorials/how-to-run-ubuntu-desktop-on-a-virtual-machine-using-virtualbox#1-overview), setting up [WSL](https://learn.microsoft.com/en-us/windows/wsl/install), or setting up your computer to [dual boot](https://opensource.com/article/18/5/dual-boot-linux). You can find online resources for all three approaches.
-2. Once inside Linux, [Download Docker Engine using the `apt` repository](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
-3. You're all set! You can begin the assignment by visiting the WATonomous Wiki.
+1. **Operating System Support:**  
+   This project supports **Linux (Ubuntu ≥ 22.04), Windows (via WSL), and macOS**. You can set up your environment using one of the following approaches:  
+   - [Ubuntu Virtual Machine](https://ubuntu.com/tutorials/how-to-run-ubuntu-desktop-on-a-virtual-machine-using-virtualbox#1-overview)  
+   - [Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install)  
+   - [Dual Boot Linux Setup](https://opensource.com/article/18/5/dual-boot-linux)  
 
-Link to Onboarding Assignment: https://wiki.watonomous.ca/
+2. **Install Docker:**  
+   Once your Linux environment is ready, follow the [official Docker installation guide](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) to install Docker Engine.  
+
+3. **Build and Run the Project:**  
+   - Build the project:  
+     ```bash
+     ./watod build
+     ```  
+   - Start the simulation locally on Foxglobe:  
+     ```bash
+     ./watod up
+     ```  
