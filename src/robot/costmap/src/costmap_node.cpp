@@ -35,6 +35,7 @@ void CostmapNode::sensor_callback(const sensor_msgs::msg::LaserScan::SharedPtr m
   costmap_pub_->publish(nav_msg);
 }
 
+//TODO: find a more efficient solution
 std::vector<float> CostmapNode::create_costmap(float angle_min, float angle_increment,
   float range_min, float range_max, const std::vector<float> &ranges) {
   std::vector<float> costmap(rows * cols, 0.0f);
