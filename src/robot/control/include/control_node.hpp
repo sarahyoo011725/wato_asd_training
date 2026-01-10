@@ -24,12 +24,11 @@ class ControlNode : public rclcpp::Node {
     nav_msgs::msg::Odometry odom;
     geometry_msgs::msg::PoseStamped goal;
     geometry_msgs::msg::PoseStamped target;
-    double lookahead_distance;
-    double heading;
-    double linear_speed;
-    
-    int64_t dt = 100; //ms
-    const double max_speed = 3.0;
+
+    int64_t dt = 50; //ms
+    const double max_linear_speed = 2.0;
+    const double max_angular_speed = 2.0;
+    const double lookahead_distance = 1.5;
     
     void periodic();
     bool is_near(double target_x, double target_y, double tolerance);
