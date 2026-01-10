@@ -36,13 +36,13 @@ class PlannerNode : public rclcpp::Node {
     nav_msgs::msg::OccupancyGrid global_map_;
     geometry_msgs::msg::PointStamped goal_;
     geometry_msgs::msg::PoseWithCovariance robot_pose_;
-    bool goal_updated_ = false;
+    bool goal_updated = false;
     bool planning = false;
 
     void plan_path();
     void publish_path();
     bool is_close(Point point, Point target, double threshold);
-    bool is_valid(Point point);
+    bool is_valid(Point cell_index);
     Point pose_to_index(Point pose);
 
     void map_callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg);

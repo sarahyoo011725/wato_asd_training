@@ -26,6 +26,7 @@ class CostmapNode : public rclcpp::Node {
     rclcpp::TimerBase::SharedPtr timer_;
 
     // costmap settings
+    // TODO: find most optimal constants for mapping
     const int rows = 200;
     const int cols = 200; 
     const float resolution = 0.1;

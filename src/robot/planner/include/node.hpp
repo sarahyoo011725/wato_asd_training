@@ -5,6 +5,7 @@
 #include <memory>
 #include <cmath>
 
+// either used to represent cell index or pose
 struct Point {
     double x, y;
     Point(double x_, double y_) : x(x_), y(y_) {};

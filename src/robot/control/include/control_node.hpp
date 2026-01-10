@@ -27,8 +27,8 @@ class ControlNode : public rclcpp::Node {
     double lookahead_distance;
     double heading;
     double linear_speed;
+    
     int64_t dt = 100; //ms
-
     const double max_speed = 3.0;
     
     void periodic();

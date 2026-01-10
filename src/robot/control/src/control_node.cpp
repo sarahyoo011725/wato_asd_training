@@ -2,15 +2,16 @@
 
 ControlNode::ControlNode(): Node("control"), control_(robot::ControlCore(this->get_logger())) {
   path_sub_ = this->create_subscription<nav_msgs::msg::Path>(
-      "/path", 10, [this](const nav_msgs::msg::Path::SharedPtr msg) { 
-        path = *msg; 
-        goal = path.poses.front();
-    });
+    "/path", 10, 
+    [this](const nav_msgs::msg::Path::SharedPtr msg) { 
+      path = *msg; 
+      goal = path.poses.front();
+  });
   odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-      "/odom/filtered", 10, [this](const nav_msgs::msg::Odometry::SharedPtr msg) { odom = *msg; });
+    "/odom/filtered", 10, 
+    [this](const nav_msgs::msg::Odometry::SharedPtr msg) { odom = *msg; });
   cmd_vel_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", 10);
-  timer_ = this->create_wall_timer(
-      std::chrono::milliseconds(dt), [this]() { periodic(); });
+  timer_ = this->create_wall_timer(std::chrono::milliseconds(dt), [this]() { periodic(); });
 }
 
 void ControlNode::periodic() {

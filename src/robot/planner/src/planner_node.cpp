@@ -21,7 +21,7 @@ void PlannerNode::map_callback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg
 
 void PlannerNode::goal_callback(const geometry_msgs::msg::PointStamped::SharedPtr msg) {  
   goal_ = *msg;
-  goal_updated_ = true;
+  goal_updated = true;
   state_ = State::REACHING_TO_GOAL;
   plan_path();
 }
@@ -51,7 +51,7 @@ void PlannerNode::timer_callback() {
 
 // find the shortest path to goal using A* search
 void PlannerNode::plan_path() {
-  if (!goal_updated_|| global_map_.data.empty()) {
+  if (!goal_updated || global_map_.data.empty()) {
     RCLCPP_WARN(this->get_logger(), "Cannot plan path: Missing map or goal!");
     return;
   }
@@ -61,6 +61,7 @@ void PlannerNode::plan_path() {
   std::unordered_set<Point, Point::Hash> visited;
   std::stack<Point> path;
 
+  // convert start and goal pose into global map cell indices
   Point start;
   start.x = robot_pose_.pose.position.x;
   start.y = robot_pose_.pose.position.y;
@@ -176,8 +177,9 @@ Point PlannerNode::pose_to_index(Point pose) {
   return p;
 }
 
-bool PlannerNode::is_valid(Point point) {
-  return point.x < global_map_.info.width && point.y < global_map_.info.height && point.x >= 0 && point.y >= 0;
+bool PlannerNode::is_valid(Point cell_index) {
+  return cell_index.x < global_map_.info.width && cell_index.y < global_map_.info.height 
+    && cell_index.x >= 0 && cell_index.y >= 0;
 }
 
 bool PlannerNode::is_close(Point point, Point target, double threshold) {
