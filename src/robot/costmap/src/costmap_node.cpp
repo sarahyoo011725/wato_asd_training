@@ -4,56 +4,101 @@
 
 #include "costmap_node.hpp"
 
-namespace {
-  constexpr auto default_test_topic = "/test_topic";
-  constexpr auto default_sensor_topic = "/lidar";
-  constexpr auto default_costmap_topic = "/costmap";
+CostmapNode::CostmapNode() : Node("costmap"), costmap_(robot::CostmapCore(this->get_logger())) {
+  string_pub_ = create_publisher<std_msgs::msg::String>("/test_topic", 10);
+  costmap_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>("/costmap", 10);
+  sensor_msg_sub_ = create_subscription<sensor_msgs::msg::LaserScan>(
+    "/lidar", 10, std::bind(&CostmapNode::sensor_callback, this, std::placeholders::_1));
 }
 
-CostmapNode::CostmapNode() : Node("costmap"), costmap_(robot::CostmapCore(this->get_logger())) {
-  string_pub_ = create_publisher<std_msgs::msg::String>(default_test_topic, 10);
-  costmap_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>(default_costmap_topic, 10);
+void CostmapNode::sensor_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
+  auto m = msg.get();
+  auto costmap = create_costmap(m->angle_min, m->angle_increment, m->range_min, m->range_max, m->ranges);
 
-  //timer_ = create_wall_timer(std::chrono::milliseconds(500), std::bind(&CostmapNode::publish_msg, this));
+  nav_msgs::msg::OccupancyGrid nav_msg;
+  nav_msg.header.frame_id = "sim_world";
+  nav_msg.header.stamp = now();
+  nav_msg.info.width = cols;
+  nav_msg.info.height = rows;
+  nav_msg.info.resolution = resolution;
+  nav_msg.info.origin.position.x = -width_m / 2.0;
+  nav_msg.info.origin.position.y = -height_m / 2.0;
+  nav_msg.info.origin.position.z = 0;
+  nav_msg.info.origin.orientation.w = 1.0;
+  nav_msg.data.resize(rows * cols);
 
-  sensor_msg_sub_ = create_subscription<sensor_msgs::msg::LaserScan>(
-    default_sensor_topic, 
-    rclcpp::SystemDefaultsQoS(), 
-    [this](const sensor_msgs::msg::LaserScan::SharedPtr msg) {
-      auto m = msg.get();
-      auto costmap = costmap_.create_costmap(
-        m->angle_min, m->angle_increment, m->range_min, m->range_max, m->ranges);
+  size_t n = costmap.size();
+  for (size_t i = 0; i < n; i++) {
+    nav_msg.data[i] = costmap[i]; 
+  }
 
-      nav_msgs::msg::OccupancyGrid nav_msg;
-      nav_msg.header.frame_id = "map";
-      nav_msg.header.stamp = now();
-      nav_msg.info.height = costmap_.height_m;
-      nav_msg.info.width = costmap_.width_m;
-      nav_msg.info.resolution = costmap_.resolution;
-      nav_msg.info.origin.position.x = costmap_.origin_x;
-      nav_msg.info.origin.position.y = costmap_.origin_y;
-      nav_msg.info.origin.position.z = 0;
-      nav_msg.info.origin.orientation.w = 0;
-      nav_msg.data.resize(costmap_.rows * costmap_.cols);
+  costmap_pub_->publish(nav_msg);
+}
 
-      for (int i = 0; i < costmap.size(); i++) {
-        if (costmap[i] == 0) {
-          nav_msg.data[i] = 0;
-        } else {
-          nav_msg.data[i] = (int) (std::min(costmap_.mark_obstacle, 
-            costmap[i] * costmap_.mark_obstacle / costmap_.max_cost));
-        }
+//TODO: find a more efficient solution
+std::vector<float> CostmapNode::create_costmap(float angle_min, float angle_increment,
+  float range_min, float range_max, const std::vector<float> &ranges) {
+  std::vector<float> costmap(rows * cols, 0.0f);
+  std::queue<Point> obstacles;
+  size_t n = ranges.size();
+
+  // origin indices in grid
+  Point origin;
+  origin.x = std::floor(cols / 2);
+  origin.y = std::floor(rows / 2);
+
+  for (size_t i = 0; i < n; i++) {
+    double angle = angle_min + angle_increment * i;
+    double range = ranges[i];
+
+    if (range <= range_max && range >= range_min) {
+      // transform cartesian coordinates into grid indices
+      int x = origin.x + std::floor(range * std::cos(angle) / resolution);
+      int y = origin.y + std::floor(range * std::sin(angle) / resolution); 
+
+      if (x < 0 || x >= cols || y < 0 || y >= rows) {
+        //RCLCPP_INFO(get_logger(), "costmap index out of bound: (x=%d, y=%d)", x, y);
+        continue;
       }
 
-      costmap_pub_->publish(nav_msg);
-    });
-}
+      // mark obstacle
+      costmap[y * cols + x] = max_cost;  
+      // stores obstacle points
+      obstacles.push({x, y});
+    }
+  }
 
-void CostmapNode::publish_msg() {
-  auto msg = std_msgs::msg::String();
-  msg.data = "Test message publishment";
-  RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", msg.data.c_str());
-  string_pub_->publish(msg);
+  const int step_size = std::ceil(inflation_radius_m / resolution);
+
+  while (!obstacles.empty()) {
+    Point obstacle = obstacles.front();
+    obstacles.pop();
+
+    // calculate the euclidean distance between an obstacle cell and adjacent cells 
+    for (int dy = -step_size; dy <= step_size; dy++) {
+      for (int dx = -step_size; dx <= step_size; dx++) {
+        int adj_x = obstacle.x + dx;
+        int adj_y = obstacle.y + dy;
+
+        if (adj_x < 0 || adj_x >= cols || adj_y < 0 || adj_y >= rows) {
+          continue;
+        }
+
+        // calculate euclidean distance in meter
+        double distance_m = std::hypot(dx, dy) * resolution;
+
+        if (distance_m < inflation_radius_m) {
+          // assign inflated cost to the surrounding cell
+          float cost = max_cost * (1 - distance_m / inflation_radius_m);
+          if (costmap[adj_y * cols + adj_x] < cost) {
+            costmap[adj_y * cols + adj_x] = cost;
+          }
+        }
+      }
+    }
+  }
+
+  return costmap;
 }
 
 int main(int argc, char ** argv)

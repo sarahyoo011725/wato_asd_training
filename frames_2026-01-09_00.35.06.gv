@@ -1,0 +1,14 @@
+digraph G {
+"robot" -> "robot/right_wheel"[label=" Broadcaster: default_authority\nAverage rate: 1001.024\nBuffer length: 0.977\nMost recent transform: 94.638\nOldest transform: 93.661\n"];
+"sim_world" -> "robot"[label=" Broadcaster: default_authority\nAverage rate: 1001.029\nBuffer length: 0.972\nMost recent transform: 94.638\nOldest transform: 93.666\n"];
+"robot" -> "robot/left_wheel"[label=" Broadcaster: default_authority\nAverage rate: 1001.024\nBuffer length: 0.977\nMost recent transform: 94.638\nOldest transform: 93.661\n"];
+"robot" -> "robot/caster"[label=" Broadcaster: default_authority\nAverage rate: 1001.024\nBuffer length: 0.977\nMost recent transform: 94.638\nOldest transform: 93.661\n"];
+"robot/chassis" -> "robot/chassis/camera"[label=" Broadcaster: default_authority\nAverage rate: 1001.029\nBuffer length: 0.972\nMost recent transform: 94.638\nOldest transform: 93.666\n"];
+"robot" -> "robot/chassis"[label=" Broadcaster: default_authority\nAverage rate: 1001.029\nBuffer length: 0.972\nMost recent transform: 94.638\nOldest transform: 93.666\n"];
+"robot/chassis" -> "robot/chassis/lidar"[label=" Broadcaster: default_authority\nAverage rate: 1001.029\nBuffer length: 0.972\nMost recent transform: 94.638\nOldest transform: 93.666\n"];
+"robot/chassis" -> "robot/chassis/imu_sensor"[label=" Broadcaster: default_authority\nAverage rate: 1001.029\nBuffer length: 0.972\nMost recent transform: 94.638\nOldest transform: 93.666\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1767936906.2349072"[ shape=plaintext ] ;
+}->"sim_world";
+}
